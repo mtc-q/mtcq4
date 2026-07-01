@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>mtcq</title>
+<script>
+  // GitHub Pages has no server rewrites, so /username lands here (404).
+  // We turn the path into tree.html?u=username and redirect instantly.
+  (function () {
+    var parts = location.pathname.split("/").filter(Boolean);
+    // On project pages (user.github.io/repo/name) the repo name is first — take the LAST segment.
+    var name = parts[parts.length - 1] || "";
+    var base = location.pathname.slice(0, location.pathname.lastIndexOf("/") + 1);
+    if (name && !name.includes(".")) {
+      location.replace(base + "tree.html?u=" + encodeURIComponent(name.toLowerCase()));
+    } else {
+      location.replace(base + "index.html");
+    }
+  })();
+</script>
+</head>
+<body style="background:#0a0a0a;color:#fff;font-family:monospace;padding:40px">Redirecting…</body>
+</html>
