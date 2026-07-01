@@ -1,0 +1,16 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": ["firebase.json", "firestore.rules", "SETUP.md", "**/.*"],
+    "cleanUrls": true,
+    "rewrites": [
+      { "source": "/", "destination": "/index.html" },
+      { "source": "/dashboard", "destination": "/dashboard.html" },
+      { "source": "/admin", "destination": "/admin.html" },
+      { "source": "/:username", "destination": "/tree.html" }
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}
