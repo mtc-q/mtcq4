@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mtcq — every link you promote, one page</title>
+<meta name="description" content="mtcq is a free link-in-bio platform for creators. Claim your name, stack your affiliate links, share one URL everywhere. Free use, excellent service.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%23ff5c1a%22/><text x=%2216%22 y=%2223%22 font-size=%2218%22 font-family=%22monospace%22 fill=%22white%22 text-anchor=%22middle%22>m</text></svg>">
+<link rel="stylesheet" href="style.css">
+<style>
+  /* ---------- hero ---------- */
+  .hero { display: grid; grid-template-columns: 1.15fr 1fr; gap: 56px; padding: 84px 0 70px; align-items: center; }
+  @media (max-width: 900px) { .hero { grid-template-columns: 1fr; padding-top: 48px; gap: 40px; } }
+  .kicker {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--orange-deep); background: var(--orange-soft);
+    border: 1px solid #ffd9c4; border-radius: 999px; padding: 7px 14px; margin-bottom: 22px;
+  }
+  .kicker i { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); animation: pulse 2s infinite; }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(44px, 7vw, 84px);
+    line-height: .98; letter-spacing: -.01em;
+  }
+  .hero h1 em { font-style: normal; color: var(--orange); }
+  .hero p.sub { margin-top: 22px; color: #55493f; max-width: 48ch; font-size: 17px; }
+  .hero .ctas { margin-top: 30px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .hero .mini-note { font-family: var(--font-mono); font-size: 11px; color: var(--ash); margin-top: 14px; }
+
+  /* animated demo card */
+  .demo-stage { position: relative; display: flex; justify-content: center; }
+  .demo-card {
+    width: min(340px, 100%);
+    background: linear-gradient(170deg, #fff7f2, #ffe9dc);
+    border: 1px solid #ffd9c4;
+    border-radius: 24px;
+    padding: 30px 24px;
+    box-shadow: var(--shadow-pop);
+    animation: bob 5s ease-in-out infinite;
+  }
+  .demo-card .avatar {
+    width: 62px; height: 62px; border-radius: 50%;
+    background: var(--orange); color: #fff;
+    font-family: var(--font-display); font-size: 26px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+  }
+  .demo-card h3 { text-align: center; font-size: 19px; font-weight: 700; }
+  .demo-card .at { text-align: center; font-family: var(--font-mono); font-size: 11.5px; color: var(--orange-deep); margin: 3px 0 20px; }
+  .demo-card .dl {
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    padding: 13px 15px; margin-bottom: 11px; font-weight: 600; font-size: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    opacity: 0; animation: fadeUp .5s ease forwards;
+    transition: transform .15s, border-color .15s;
+  }
+  .demo-card .dl:hover { transform: translateX(5px); border-color: var(--orange); }
+  .demo-card .dl small { display: block; font-weight: 400; color: var(--ash); font-size: 12px; }
+  .demo-card .dl span.go { color: var(--orange); }
+  .demo-card .dl:nth-child(4) { animation-delay: .5s; }
+  .demo-card .dl:nth-child(5) { animation-delay: .7s; }
+  .demo-card .dl:nth-child(6) { animation-delay: .9s; }
+  .click-chip {
+    position: absolute; top: 16%; right: 4%;
+    background: var(--ink); color: #fff; font-family: var(--font-mono); font-size: 11px;
+    border-radius: 999px; padding: 8px 13px; box-shadow: var(--shadow);
+    animation: bob 4s ease-in-out infinite reverse;
+  }
+  .click-chip b { color: #ffb38c; }
+
+  /* ---------- section scaffolding ---------- */
+  section.block { padding: 76px 0 0; }
+  .sec-kicker { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--orange-deep); margin-bottom: 10px; }
+  .sec-title { font-family: var(--font-display); font-size: clamp(26px, 4vw, 42px); line-height: 1.08; max-width: 22ch; }
+  .sec-sub { color: #55493f; margin-top: 12px; max-width: 60ch; }
+
+  /* numbers band */
+  .band { background: var(--ink); color: #fff; border-radius: var(--radius); margin-top: 70px; padding: 34px 30px;
+          display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  @media (max-width: 800px) { .band { grid-template-columns: repeat(2, 1fr); } }
+  .band b { display: block; font-family: var(--font-display); font-size: 34px; color: var(--orange); }
+  .band span { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .14em; opacity: .75; }
+
+  /* features */
+  .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 36px; }
+  @media (max-width: 900px) { .feat-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) { .feat-grid { grid-template-columns: 1fr; } }
+  .feat {
+    border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; background: var(--paper);
+    transition: transform .18s cubic-bezier(.2,.7,.2,1), box-shadow .18s, border-color .18s;
+  }
+  .feat:hover { transform: translateY(-5px); box-shadow: var(--shadow-pop); border-color: #ffd9c4; }
+  .feat .ico {
+    width: 42px; height: 42px; border-radius: 12px; background: var(--orange-soft); color: var(--orange-deep);
+    display: flex; align-items: center; justify-content: center; font-size: 19px; margin-bottom: 14px;
+  }
+  .feat b { display: block; font-size: 15.5px; margin-bottom: 6px; }
+  .feat p { color: #6b5f53; font-size: 13.5px; }
+
+  /* how it works */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 36px; counter-reset: step; }
+  @media (max-width: 800px) { .steps { grid-template-columns: 1fr; } }
+  .step { position: relative; border: 1px solid var(--line); border-radius: var(--radius); padding: 26px 22px 22px; background: var(--cream); }
+  .step::before {
+    counter-increment: step; content: counter(step);
+    position: absolute; top: -18px; left: 20px;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--orange); color: #fff;
+    font-family: var(--font-display); font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow);
+  }
+  .step b { display: block; margin: 6px 0 6px; font-size: 15.5px; }
+  .step p { font-size: 13.5px; color: #6b5f53; }
+  .step code { font-family: var(--font-mono); font-size: 12px; background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 2px 7px; }
+
+  /* audience chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+  .chips span {
+    font-family: var(--font-mono); font-size: 12.5px; border: 1px solid var(--line);
+    border-radius: 999px; padding: 9px 16px; background: var(--paper);
+    transition: transform .15s, border-color .15s, background .15s;
+  }
+  .chips span:hover { transform: translateY(-3px) rotate(-1deg); border-color: var(--orange); background: var(--orange-soft); }
+
+  /* FAQ */
+  .faq { margin-top: 32px; max-width: 760px; }
+  .faq details { border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--paper); margin-bottom: 10px; overflow: hidden; }
+  .faq summary {
+    cursor: pointer; list-style: none; padding: 17px 18px; font-weight: 600; font-size: 15px;
+    display: flex; justify-content: space-between; align-items: center; gap: 14px;
+    transition: background .15s;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary:hover { background: var(--orange-soft); }
+  .faq summary::after { content: '+'; font-family: var(--font-mono); color: var(--orange); font-size: 19px; transition: transform .2s; }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq details p { padding: 0 18px 17px; color: #55493f; font-size: 14px; animation: fadeUp .3s ease both; }
+
+  /* CTA band */
+  .cta-band {
+    margin-top: 84px;
+    background: linear-gradient(135deg, var(--orange) 0%, #ff7a3d 60%, #ff9d5c 100%);
+    color: #fff; border-radius: 24px; text-align: center;
+    padding: 64px 28px;
+    position: relative; overflow: hidden;
+  }
+  .cta-band::before, .cta-band::after {
+    content: ''; position: absolute; border-radius: 50%; background: rgba(255,255,255,.12);
+  }
+  .cta-band::before { width: 260px; height: 260px; top: -110px; left: -80px; }
+  .cta-band::after  { width: 340px; height: 340px; bottom: -160px; right: -110px; }
+  .cta-band h2 { font-family: var(--font-display); font-size: clamp(30px, 5vw, 54px); line-height: 1.02; position: relative; }
+  .cta-band p { margin: 14px auto 28px; max-width: 52ch; opacity: .92; position: relative; }
+  .cta-band .btn { background: #fff; color: var(--orange-deep); border-color: #fff; position: relative; }
+  .cta-band .btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="overlay" id="maintenance-overlay">
+  <div><h1>mtcq is <b>paused</b></h1><p>The platform is temporarily shut down for maintenance. Check back soon.</p></div>
+</div>
+
+<header class="topbar">
+  <a class="wordmark" href="index.html">mtcq<span>.</span></a>
+  <nav class="links">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+  <div class="topbar-actions">
+    <span class="who" id="who"></span>
+    <a class="btn ghost small" id="nav-login" href="login.html">Log in</a>
+    <a class="btn small" id="nav-signup" href="login.html#signup">Create free account</a>
+    <a class="btn small" id="nav-dash" href="dashboard.html" style="display:none">Open dashboard →</a>
+  </div>
+</header>
+
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    FREE USE, EXCELLENT SERVICE <em>///</em> ONE TREE. EVERY LINK. <em>///</em> NO CARD. NO CATCH. <em>///</em>
+    FREE USE, EXCELLENT SERVICE <em>///</em> ONE TREE. EVERY LINK. <em>///</em> NO CARD. NO CATCH. <em>///</em>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <span class="kicker"><i></i> Free use, excellent service</span>
+      <h1>Every link you promote. <em>One page.</em></h1>
+      <p class="sub">mtcq gives creators one clean home for all their affiliate links, socials, drops, and offers. Claim your name, stack your links, and share a single URL everywhere — then watch which links actually earn their spot.</p>
+      <div class="ctas">
+        <a class="btn big" href="login.html#signup">Claim your name — free</a>
+        <a class="btn ghost big" href="#how">See how it works</a>
+      </div>
+      <p class="mini-note" id="demo-url">/yourname · yours in under a minute</p>
+    </div>
+
+    <div class="demo-stage reveal">
+      <div class="demo-card">
+        <div class="avatar">J</div>
+        <h3>Jay Rivera</h3>
+        <div class="at" id="demo-at">/jayrivera</div>
+        <div class="dl">Latest drop — 20% off<small>my current favorite kit</small><span class="go">→</span></div>
+        <div class="dl">Full desk setup<small>everything I use, one list</small><span class="go">→</span></div>
+        <div class="dl">Weekly newsletter<small>one email, zero spam</small><span class="go">→</span></div>
+      </div>
+      <div class="click-chip">▲ <b>+128</b> clicks today</div>
+    </div>
+  </section>
+
+  <!-- NUMBERS BAND -->
+  <div class="band reveal">
+    <div><b>$0</b><span>forever — really</span></div>
+    <div><b>1</b><span>URL to share everywhere</span></div>
+    <div><b>60s</b><span>from signup to live page</span></div>
+    <div><b>24/7</b><span>stats on every click</span></div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="block" id="features">
+    <p class="sec-kicker">What you get</p>
+    <h2 class="sec-title">Small platform. Serious toolkit.</h2>
+    <p class="sec-sub">Everything a promotional creator needs to send people to the right place — and nothing you have to pay for.</p>
+
+    <div class="feat-grid">
+      <div class="feat reveal"><div class="ico">⌘</div><b>Your own URL</b><p>Claim a username once and it's yours. Your tree lives at a clean, memorable address you can put in any bio.</p></div>
+      <div class="feat reveal"><div class="ico">↗</div><b>Click & view stats</b><p>See page views, clicks per link, and your most popular link at a glance — so you know what's earning.</p></div>
+      <div class="feat reveal"><div class="ico">▦</div><b>Instant QR code</b><p>Every tree ships with a ready-made QR code. Put it on packaging, posters, business cards, or your stream overlay.</p></div>
+      <div class="feat reveal"><div class="ico">◧</div><b>Custom wallpapers</b><p>Pick from designed presets or set any custom color. Your page, your vibe — changes go live instantly.</p></div>
+      <div class="feat reveal"><div class="ico">▣</div><b>Link images</b><p>Attach a PNG to any link. We auto-resize it into a crisp thumbnail so your page stays fast and free.</p></div>
+      <div class="feat reveal"><div class="ico">✎</div><b>One tidy dashboard</b><p>Add, reorder, and edit links in seconds. Organized tabs for links, design, stats, and sharing — no clutter.</p></div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="block" id="how">
+    <p class="sec-kicker">How it works</p>
+    <h2 class="sec-title">Live in three steps.</h2>
+
+    <div class="steps">
+      <div class="step reveal"><b>Create your free account</b><p>Just an email and a password. No card, no trial countdown, no upsell screens.</p></div>
+      <div class="step reveal"><b>Claim your name</b><p>Pick a username like <code>/yourname</code>. We check availability instantly — once it's yours, nobody else can take it.</p></div>
+      <div class="step reveal"><b>Stack links & share</b><p>Add links with titles, descriptions, and images. Share one URL (or the QR code) everywhere you post.</p></div>
+    </div>
+
+    <div class="chips reveal">
+      <span>◆ affiliate creators</span><span>◆ streamers</span><span>◆ musicians</span>
+      <span>◆ small shops</span><span>◆ podcasters</span><span>◆ artists</span><span>◆ anyone with links</span>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="block" id="faq">
+    <p class="sec-kicker">FAQ</p>
+    <h2 class="sec-title">Questions, answered.</h2>
+
+    <div class="faq reveal">
+      <details open>
+        <summary>Is mtcq really free?</summary>
+        <p>Yes — free use, excellent service is the whole idea. No paid tiers, no card required, no features held hostage. Create your account, claim your name, and everything on this page is yours.</p>
+      </details>
+      <details>
+        <summary>What exactly is a "tree"?</summary>
+        <p>Your tree is your public page: one URL that holds all the links you want to share. Instead of juggling ten links across bios and captions, you share one — your tree — and people pick where to go.</p>
+      </details>
+      <details>
+        <summary>How do the stats work?</summary>
+        <p>Every time someone opens your page we count a view, and every time they tap a link we count a click for that specific link. Your dashboard shows totals, a per-link breakdown, and highlights your most popular link.</p>
+      </details>
+      <details>
+        <summary>Can I customize how my page looks?</summary>
+        <p>Yes — choose from designed wallpaper presets or set any custom color, add a display name and bio, and attach PNG images to individual links. Changes appear on your live page the moment you save.</p>
+      </details>
+      <details>
+        <summary>Do I need to know how to code?</summary>
+        <p>Not at all. Everything happens in a simple dashboard: type, click, save. If you can fill out a form, you can run a tree.</p>
+      </details>
+      <details>
+        <summary>Is my account information private?</summary>
+        <p>Your email and account data are private to you. Only your public tree — the display name, bio, and links you choose to publish — is visible to visitors.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-band reveal">
+    <h2>Your links deserve<br>a better home.</h2>
+    <p>Claim your name before someone else does. It takes about a minute, and it costs exactly nothing.</p>
+    <a class="btn big" href="login.html#signup">Get your free tree →</a>
+  </section>
+</main>
+
+<footer class="site">
+  <span>mtcq — free use, excellent service</span>
+  <span><a href="#features">features</a> · <a href="#faq">faq</a> · <a href="login.html">log in</a></span>
+  <span id="year"></span>
+</footer>
+
+<script type="module">
+import { auth, onAuthStateChanged, getPlatformConfig, enforceMaintenance } from "./app.js";
+
+document.getElementById("year").textContent = "© " + new Date().getFullYear();
+document.getElementById("demo-url").textContent =
+  location.host + location.pathname.replace(/[^/]*$/, "") + "yourname · yours in under a minute";
+
+// scroll reveal
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+// session-aware topbar + maintenance kill-switch
+const config = await getPlatformConfig();
+onAuthStateChanged(auth, (user) => {
+  if (enforceMaintenance(config, user)) return;
+  document.getElementById("who").textContent = user ? user.email : "";
+  document.getElementById("nav-login").style.display  = user ? "none" : "";
+  document.getElementById("nav-signup").style.display = user ? "none" : "";
+  document.getElementById("nav-dash").style.display   = user ? "" : "none";
+});
+</script>
+</body>
+</html>

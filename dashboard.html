@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — mtcq</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%23ff5c1a%22/><text x=%2216%22 y=%2223%22 font-size=%2218%22 font-family=%22monospace%22 fill=%22white%22 text-anchor=%22middle%22>m</text></svg>">
+<link rel="stylesheet" href="style.css">
+<style>
+  main { padding-top: 34px; padding-bottom: 120px; }
+  .page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 18px; flex-wrap: wrap; margin-bottom: 22px; }
+  .page-head h1 { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); }
+  .page-head .sub { font-family: var(--font-mono); font-size: 12px; color: var(--ash); margin-top: 4px; }
+  .urlbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  .hidden { display: none !important; }
+
+  /* claim view */
+  #claim-view { max-width: 540px; margin: 40px auto 0; text-align: center; animation: popIn .35s ease both; }
+  #claim-view .big-emo { font-size: 44px; }
+  #claim-view h2 { font-family: var(--font-display); font-size: 30px; margin: 10px 0 8px; letter-spacing: 0; text-transform: none; color: var(--ink); }
+  #claim-view p.lead { color: #6b5f53; margin-bottom: 22px; }
+  .prefix { display: flex; align-items: stretch; }
+  .prefix .pre {
+    font-family: var(--font-mono); font-size: 13px; color: var(--orange-deep); background: var(--orange-soft);
+    border: 1.5px solid var(--line); border-right: 0; border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    padding: 11px 12px; white-space: nowrap; display: flex; align-items: center;
+  }
+  .prefix input { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+
+  /* link editor rows */
+  .link-row {
+    border: 1px solid var(--line); border-radius: var(--radius);
+    background: var(--paper); padding: 16px; margin-bottom: 14px;
+    animation: fadeUp .3s ease both;
+    transition: box-shadow .15s, border-color .15s;
+  }
+  .link-row:hover { border-color: #ffd9c4; box-shadow: var(--shadow); }
+  .link-row .row-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px; flex-wrap: wrap; }
+  .link-row .row-head b { font-family: var(--font-mono); font-size: 11px; color: var(--orange-deep); letter-spacing: .14em; text-transform: uppercase; }
+  .link-row .thumbwrap { display: flex; gap: 12px; align-items: center; margin-top: 4px; flex-wrap: wrap; }
+  .link-row img.thumb { width: 46px; height: 46px; border: 1px solid var(--line); border-radius: 10px; object-fit: cover; background: var(--cream); }
+  .link-row input[type=file] { color: var(--ash); font-family: var(--font-mono); font-size: 11px; max-width: 220px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .row2 { grid-template-columns: 1fr; } }
+
+  /* wallpapers */
+  .wp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  @media (max-width: 700px) { .wp-grid { grid-template-columns: repeat(3, 1fr); } }
+  .wp-grid button {
+    height: 62px; border: 1.5px solid var(--line); cursor: pointer; border-radius: var(--radius-sm);
+    font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .wp-grid button:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+  .wp-grid button.on { outline: 3px solid var(--orange); outline-offset: 2px; }
+
+  /* stats */
+  .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
+  @media (max-width: 700px) { .stat-cards { grid-template-columns: 1fr; } }
+  .stat-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; background: var(--cream); }
+  .stat-card b { display: block; font-family: var(--font-display); font-size: 34px; color: var(--orange-deep); }
+  .stat-card span { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .14em; color: var(--ash); }
+  .stat-card small { display:block; margin-top:6px; font-size: 12.5px; color: #6b5f53; }
+  .bar { height: 10px; background: var(--line); border-radius: 999px; position: relative; margin-top: 5px; overflow: hidden; }
+  .bar i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--orange), #ff9d5c); border-radius: 999px; transition: width .6s cubic-bezier(.2,.7,.2,1); }
+  .stat-link { margin-bottom: 14px; font-size: 13.5px; font-weight: 500; }
+  .stat-link .n { color: var(--orange-deep); font-family: var(--font-mono); float: right; }
+
+  /* share */
+  #share-url {
+    font-family: var(--font-mono); font-size: 14px; word-break: break-all;
+    border: 1.5px dashed #ffc4a3; background: var(--orange-soft); color: var(--orange-deep);
+    border-radius: var(--radius-sm); padding: 13px 14px; margin-bottom: 14px;
+  }
+  #qr { width: 180px; height: 180px; border: 1px solid var(--line); border-radius: var(--radius-sm); display: block; margin: 14px 0; background: #fff; }
+
+  /* floating save bar */
+  #savebar {
+    position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 90px);
+    display: flex; gap: 14px; align-items: center;
+    background: var(--ink); color: #fff;
+    border-radius: 999px; padding: 10px 12px 10px 20px;
+    box-shadow: 0 14px 40px -10px rgba(26,21,18,.45);
+    transition: transform .3s cubic-bezier(.2,.7,.2,1);
+    z-index: 60; max-width: calc(100vw - 32px);
+  }
+  #savebar.show { transform: translate(-50%, 0); }
+  #savebar span { font-size: 13.5px; }
+  #savebar span::before { content: '●'; color: var(--orange); margin-right: 8px; animation: pulse 1.6s infinite; display: inline-block; }
+</style>
+</head>
+<body>
+
+<div class="overlay" id="maintenance-overlay">
+  <div><h1>mtcq is <b>paused</b></h1><p>The platform is temporarily shut down for maintenance. Check back soon.</p></div>
+</div>
+
+<header class="topbar">
+  <a class="wordmark" href="index.html">mtcq<span>.</span></a>
+  <div class="topbar-actions">
+    <span class="who" id="who"></span>
+    <a class="btn ghost small hidden" id="nav-admin" href="admin.html">Admin</a>
+    <button class="btn ghost small" id="nav-logout">Log out</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="msg" id="dash-msg" role="status"></div>
+
+  <!-- CLAIM VIEW: shown when the account has no tree yet -->
+  <section class="hidden" id="claim-view">
+    <div class="big-emo">🌱</div>
+    <h2>Plant your tree</h2>
+    <p class="lead">Pick a username — it becomes your public link. We check availability the moment you claim it, so no two creators can ever collide.</p>
+    <div class="panel" style="text-align:left">
+      <label class="field"><span class="lbl">Username</span>
+        <span class="prefix">
+          <span class="pre" id="url-prefix">/</span>
+          <input type="text" id="claim-name" placeholder="yourname" maxlength="20" autocomplete="off">
+        </span>
+        <span class="hint">3–20 characters · a–z, 0–9, dashes</span>
+      </label>
+      <button class="btn" id="claim-btn" style="width:100%">Claim it — it's free</button>
+    </div>
+  </section>
+
+  <!-- EDITOR -->
+  <section class="hidden" id="editor">
+    <div class="page-head">
+      <div>
+        <h1>Your tree</h1>
+        <p class="sub" id="dash-sub"></p>
+      </div>
+      <div class="urlbar">
+        <label class="hidden" id="tree-picker-wrap"><select id="tree-picker" style="min-width:180px"></select></label>
+        <span class="pill">🔗 <b id="live-url"></b></span>
+        <button class="btn ghost small" id="copy-url">Copy</button>
+        <a class="btn small" id="view-live" target="_blank" rel="noopener">View live ↗</a>
+      </div>
+    </div>
+
+    <nav class="tabs-nav" role="tablist">
+      <button data-tab="links" class="on">🔗 Links <span class="cnt" id="link-count">0</span></button>
+      <button data-tab="design">🎨 Design</button>
+      <button data-tab="stats">📈 Stats</button>
+      <button data-tab="share">📤 Share</button>
+      <button data-tab="settings">⚙ Settings</button>
+    </nav>
+
+    <!-- LINKS TAB -->
+    <div class="tab-panel on" id="tab-links">
+      <div id="links"></div>
+      <button class="btn ghost" id="add-link">+ Add a link</button>
+    </div>
+
+    <!-- DESIGN TAB -->
+    <div class="tab-panel" id="tab-design">
+      <div class="grid-2">
+        <div class="panel">
+          <h2>Identity</h2>
+          <label class="field"><span class="lbl">Display name</span>
+            <input type="text" id="f-display" maxlength="40" placeholder="Your name or brand">
+          </label>
+          <label class="field"><span class="lbl">Bio</span>
+            <textarea id="f-bio" maxlength="200" placeholder="One or two lines about what you share."></textarea>
+          </label>
+        </div>
+        <div class="panel">
+          <h2>Wallpaper</h2>
+          <div class="wp-grid" id="wp-grid"></div>
+          <label class="field hidden" id="wp-custom-wrap" style="margin-top:14px; max-width:200px">
+            <span class="lbl">Custom color</span>
+            <input type="color" id="wp-custom" value="#ffffff">
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS TAB -->
+    <div class="tab-panel" id="tab-stats">
+      <div class="stat-cards">
+        <div class="stat-card"><b id="s-views">0</b><span>Page views</span></div>
+        <div class="stat-card"><b id="s-clicks">0</b><span>Total clicks</span></div>
+        <div class="stat-card"><b id="s-top-n">—</b><span>Most popular</span><small id="s-top"></small></div>
+      </div>
+      <div class="panel">
+        <h2>Clicks per link</h2>
+        <div id="s-links"><p class="hint">No clicks yet — share your link!</p></div>
+      </div>
+    </div>
+
+    <!-- SHARE TAB -->
+    <div class="tab-panel" id="tab-share">
+      <div class="grid-2">
+        <div class="panel">
+          <h2>Your link</h2>
+          <div id="share-url"></div>
+          <button class="btn" id="copy-url-2">Copy link</button>
+          <p class="hint" style="margin-top:14px">Drop it in every bio, caption, and pinned comment. One link, always current.</p>
+        </div>
+        <div class="panel">
+          <h2>QR code</h2>
+          <p style="font-size:13.5px;color:#6b5f53">Scans straight to your tree. Great for packaging, posters, and IRL.</p>
+          <img id="qr" alt="QR code for your tree">
+          <a class="btn ghost small" id="qr-dl" target="_blank" rel="noopener">Open full size ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div class="tab-panel" id="tab-settings">
+      <div class="grid-2">
+        <div class="panel hidden" id="claim-more">
+          <h2>Claim another tree</h2>
+          <p style="font-size:13.5px;color:#6b5f53;margin-bottom:14px">Your account allows more than one tree. Claim another username:</p>
+          <label class="field">
+            <span class="prefix">
+              <span class="pre" id="url-prefix-2">/</span>
+              <input type="text" id="claim-name-2" placeholder="anothername" maxlength="20" autocomplete="off">
+            </span>
+          </label>
+          <button class="btn ghost" id="claim-btn-2">Claim it</button>
+        </div>
+        <div class="panel" style="border-color:#f3c1bb">
+          <h2 style="color:var(--danger)">Danger zone</h2>
+          <p style="font-size:13.5px;color:#6b5f53;margin-bottom:14px">Deleting this tree removes its page, links, and stats permanently, and frees the username for anyone to claim.</p>
+          <button class="btn danger" id="delete-tree">Delete this tree</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- floating save bar -->
+<div id="savebar">
+  <span>Unsaved changes</span>
+  <button class="btn small" id="save">Save now</button>
+</div>
+
+<footer class="site"><span>mtcq — free use, excellent service</span></footer>
+
+<script type="module">
+import {
+  auth, db, onAuthStateChanged, signOut,
+  doc, getDoc, setDoc, updateDoc, deleteDoc, runTransaction,
+  serverTimestamp, arrayUnion, arrayRemove,
+  getPlatformConfig, enforceMaintenance, isAdmin, validUsername,
+  treeUrl, displayUrl, qrCodeUrl, pngToThumb, say, esc, WALLPAPERS
+} from "./app.js";
+
+const $ = (id) => document.getElementById(id);
+const msg = $("dash-msg");
+$("url-prefix").textContent = displayUrl("");
+$("url-prefix-2").textContent = displayUrl("");
+
+let user = null, config = null, userDoc = null;
+let currentName = null, tree = null, links = [];
+let dirty = false;
+
+$("nav-logout").onclick = async () => { await signOut(auth); location.href = "index.html"; };
+
+// ---------- tabs ----------
+document.querySelectorAll(".tabs-nav button").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".tabs-nav button").forEach(b => b.classList.toggle("on", b === btn));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.toggle("on", p.id === "tab-" + btn.dataset.tab));
+    if (btn.dataset.tab === "stats") loadStats();
+  };
+});
+
+// ---------- dirty tracking ----------
+function markDirty() { dirty = true; $("savebar").classList.add("show"); }
+function markClean() { dirty = false; $("savebar").classList.remove("show"); }
+window.addEventListener("beforeunload", (e) => { if (dirty) { e.preventDefault(); e.returnValue = ""; } });
+
+onAuthStateChanged(auth, async (u) => {
+  if (!u) { location.href = "login.html"; return; }
+  user = u;
+  config = await getPlatformConfig();
+  if (enforceMaintenance(config, user)) return;
+  $("who").textContent = user.email;
+  if (isAdmin(user)) $("nav-admin").classList.remove("hidden");
+  await loadUser();
+});
+
+async function loadUser() {
+  const ref = doc(db, "users", user.uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) {
+    await setDoc(ref, { email: user.email, usernames: [], createdAt: serverTimestamp() });
+    userDoc = { email: user.email, usernames: [] };
+  } else {
+    userDoc = snap.data();
+    userDoc.usernames = userDoc.usernames || [];
+  }
+  route();
+}
+
+function route() {
+  const names = userDoc.usernames;
+  const max = config.maxTreesPerUser;
+
+  if (!names.length) {
+    $("claim-view").classList.remove("hidden");
+    $("editor").classList.add("hidden");
+    return;
+  }
+  $("claim-view").classList.add("hidden");
+  $("editor").classList.remove("hidden");
+  $("dash-sub").textContent = `${names.length}/${max} tree${max > 1 ? "s" : ""} · ${user.email}`;
+  $("claim-more").classList.toggle("hidden", names.length >= max);
+
+  const picker = $("tree-picker");
+  $("tree-picker-wrap").classList.toggle("hidden", names.length < 2);
+  picker.innerHTML = names.map(n => `<option value="${esc(n)}">/${esc(n)}</option>`).join("");
+  picker.onchange = () => openTree(picker.value);
+  openTree(currentName && names.includes(currentName) ? currentName : names[0]);
+}
+
+// ---------- claiming (transaction = no username collisions, ever) ----------
+async function claim(inputEl, btnEl) {
+  const name = validUsername(inputEl.value);
+  if (!name) return say(msg, "Usernames are 3–20 chars: a–z, 0–9, dashes. Some names are reserved.", false);
+  if (userDoc.usernames.length >= config.maxTreesPerUser)
+    return say(msg, `Your account is limited to ${config.maxTreesPerUser} tree(s).`, false);
+  btnEl.disabled = true;
+  try {
+    await runTransaction(db, async (tx) => {
+      const nameRef = doc(db, "usernames", name);
+      const taken = await tx.get(nameRef);
+      if (taken.exists()) throw new Error(`"${name}" is already taken. Try another.`);
+      tx.set(nameRef, { uid: user.uid });
+      tx.set(doc(db, "trees", name), {
+        username: name, ownerUid: user.uid, ownerEmail: user.email,
+        displayName: name, bio: "", wallpaper: { preset: "paper", custom: null },
+        links: [], createdAt: serverTimestamp()
+      });
+      tx.update(doc(db, "users", user.uid), { usernames: arrayUnion(name) });
+    });
+    userDoc.usernames.push(name);
+    currentName = name;
+    inputEl.value = "";
+    say(msg, `🎉 Claimed! Your tree lives at ${displayUrl(name)}`);
+    route();
+  } catch (e) { say(msg, e.message, false); }
+  finally { btnEl.disabled = false; }
+}
+$("claim-btn").onclick   = () => claim($("claim-name"),   $("claim-btn"));
+$("claim-btn-2").onclick = () => claim($("claim-name-2"), $("claim-btn-2"));
+
+// ---------- open a tree ----------
+async function openTree(name) {
+  currentName = name;
+  $("tree-picker").value = name;
+  const snap = await getDoc(doc(db, "trees", name));
+  if (!snap.exists()) return say(msg, "That tree no longer exists.", false);
+  tree = snap.data();
+  links = (tree.links || []).map(l => ({ ...l }));
+  $("f-display").value = tree.displayName || "";
+  $("f-bio").value = tree.bio || "";
+  markClean();
+  renderWallpapers();
+  renderLinks();
+  renderShare();
+  loadStats();
+}
+$("f-display").oninput = markDirty;
+$("f-bio").oninput = markDirty;
+
+// ---------- design tab ----------
+function renderWallpapers() {
+  const grid = $("wp-grid");
+  grid.innerHTML = "";
+  const sel = tree.wallpaper?.preset || "paper";
+  for (const [key, wp] of Object.entries(WALLPAPERS)) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = wp.label;
+    if (key === "custom") { b.style.background = tree.wallpaper?.custom || "#ffffff"; }
+    else { b.style.background = wp.css; b.style.color = wp.text; }
+    b.classList.toggle("on", key === sel);
+    b.onclick = () => {
+      tree.wallpaper = { preset: key, custom: key === "custom" ? $("wp-custom").value : null };
+      markDirty();
+      renderWallpapers();
+    };
+    grid.appendChild(b);
+  }
+  $("wp-custom-wrap").classList.toggle("hidden", sel !== "custom");
+  if (tree.wallpaper?.custom) $("wp-custom").value = tree.wallpaper.custom;
+  $("wp-custom").oninput = (e) => { tree.wallpaper = { preset: "custom", custom: e.target.value }; markDirty(); };
+}
+
+// ---------- links tab ----------
+function renderLinks() {
+  const box = $("links");
+  box.innerHTML = "";
+  $("link-count").textContent = `${links.length}/${config.maxLinksPerTree}`;
+  if (!links.length) {
+    box.innerHTML = `<div class="panel" style="text-align:center; padding:40px 20px; margin-bottom:14px">
+      <div style="font-size:34px">🔗</div>
+      <p style="font-weight:600; margin:8px 0 4px">No links yet</p>
+      <p class="hint">Add your first link below — it appears on your live page the moment you save.</p></div>`;
+  }
+  links.forEach((l, i) => {
+    const row = document.createElement("div");
+    row.className = "link-row";
+    row.innerHTML = `
+      <div class="row-head">
+        <b>Link ${i + 1}</b>
+        <span>
+          <button class="btn ghost small" data-a="up" title="Move up">↑</button>
+          <button class="btn ghost small" data-a="down" title="Move down">↓</button>
+          <button class="btn danger small" data-a="del">Remove</button>
+        </span>
+      </div>
+      <div class="row2">
+        <label class="field"><span class="lbl">Title</span>
+          <input type="text" data-f="title" maxlength="60" value="${esc(l.title)}" placeholder="What is it?"></label>
+        <label class="field"><span class="lbl">Description <span class="hint">(optional)</span></span>
+          <input type="text" data-f="desc" maxlength="100" value="${esc(l.desc)}" placeholder="A short line under the title"></label>
+      </div>
+      <label class="field"><span class="lbl">URL</span>
+        <input type="url" data-f="url" value="${esc(l.url)}" placeholder="https://…"></label>
+      <div class="thumbwrap">
+        <img class="thumb" src="${l.img || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22/>'}" alt="">
+        <input type="file" accept="image/png" data-f="img" title="PNG image">
+        ${l.img ? '<button class="btn ghost small" data-a="clearimg">Clear image</button>' : '<span class="hint">optional .png — auto-resized</span>'}
+      </div>`;
+    row.querySelectorAll("[data-f]").forEach(inp => {
+      if (inp.type === "file") {
+        inp.onchange = async () => {
+          if (!inp.files[0]) return;
+          try { l.img = await pngToThumb(inp.files[0]); markDirty(); renderLinks(); }
+          catch (e) { say(msg, e.message, false); inp.value = ""; }
+        };
+      } else { inp.oninput = () => { l[inp.dataset.f] = inp.value; markDirty(); }; }
+    });
+    row.querySelectorAll("[data-a]").forEach(btn => btn.onclick = () => {
+      const a = btn.dataset.a;
+      if (a === "del") links.splice(i, 1);
+      if (a === "up" && i > 0) [links[i - 1], links[i]] = [links[i], links[i - 1]];
+      if (a === "down" && i < links.length - 1) [links[i + 1], links[i]] = [links[i], links[i + 1]];
+      if (a === "clearimg") l.img = null;
+      markDirty();
+      renderLinks();
+    });
+    box.appendChild(row);
+  });
+}
+
+$("add-link").onclick = () => {
+  if (links.length >= config.maxLinksPerTree)
+    return say(msg, `This tree is limited to ${config.maxLinksPerTree} links.`, false);
+  links.push({ id: crypto.randomUUID().slice(0, 8), title: "", desc: "", url: "", img: null });
+  markDirty();
+  renderLinks();
+};
+
+// ---------- save ----------
+$("save").onclick = async () => {
+  for (const l of links) {
+    if (!l.title.trim()) return say(msg, "Every link needs a title.", false);
+    if (!/^https?:\/\/.+/.test(l.url)) return say(msg, `"${l.title || "A link"}" needs a full URL starting with http:// or https://`, false);
+  }
+  $("save").disabled = true;
+  try {
+    await updateDoc(doc(db, "trees", currentName), {
+      displayName: $("f-display").value.trim() || currentName,
+      bio: $("f-bio").value.trim(),
+      wallpaper: tree.wallpaper || { preset: "paper", custom: null },
+      links: links.map(l => ({ id: l.id, title: l.title.trim(), desc: (l.desc || "").trim(), url: l.url.trim(), img: l.img || null })),
+      updatedAt: serverTimestamp()
+    });
+    markClean();
+    say(msg, "✓ Saved — your live page is updated.");
+  } catch (e) { say(msg, "Save failed: " + e.message, false); }
+  finally { $("save").disabled = false; }
+};
+
+// ---------- settings ----------
+$("delete-tree").onclick = async () => {
+  if (!confirm(`Delete ${displayUrl(currentName)} permanently? This frees the username for anyone to claim.`)) return;
+  try {
+    await deleteDoc(doc(db, "trees", currentName));
+    await deleteDoc(doc(db, "stats", currentName)).catch(() => {});
+    await deleteDoc(doc(db, "usernames", currentName));
+    await updateDoc(doc(db, "users", user.uid), { usernames: arrayRemove(currentName) });
+    userDoc.usernames = userDoc.usernames.filter(n => n !== currentName);
+    currentName = null;
+    markClean();
+    say(msg, "Tree deleted.");
+    route();
+  } catch (e) { say(msg, "Delete failed: " + e.message, false); }
+};
+
+// ---------- share ----------
+function renderShare() {
+  const live = treeUrl(currentName);
+  $("live-url").textContent = displayUrl(currentName);
+  $("share-url").textContent = displayUrl(currentName);
+  $("view-live").href = live;
+  $("qr").src = qrCodeUrl(live);
+  $("qr-dl").href = qrCodeUrl(live, 600);
+  const copy = async () => { await navigator.clipboard.writeText(live); say(msg, "Link copied to clipboard."); };
+  $("copy-url").onclick = copy;
+  $("copy-url-2").onclick = copy;
+}
+
+// ---------- stats ----------
+async function loadStats() {
+  if (!currentName) return;
+  const snap = await getDoc(doc(db, "stats", currentName));
+  const s = snap.exists() ? snap.data() : { views: 0, clicks: {} };
+  const clicks = s.clicks || {};
+  const total = Object.values(clicks).reduce((a, b) => a + b, 0);
+  $("s-views").textContent = s.views || 0;
+  $("s-clicks").textContent = total;
+
+  const box = $("s-links");
+  const top = links.reduce((best, l) => (clicks[l.id] || 0) > (clicks[best?.id] || -1) ? l : best, null);
+  if (top && clicks[top.id]) {
+    $("s-top-n").textContent = clicks[top.id];
+    $("s-top").textContent = `"${top.title}"`;
+  } else { $("s-top-n").textContent = "—"; $("s-top").textContent = ""; }
+
+  if (!links.length || !total) { box.innerHTML = '<p class="hint">No clicks yet — share your link!</p>'; return; }
+  const max = Math.max(...links.map(l => clicks[l.id] || 0), 1);
+  box.innerHTML = links.map(l => {
+    const c = clicks[l.id] || 0;
+    return `<div class="stat-link">${esc(l.title || l.url)}<span class="n">${c}</span>
+      <div class="bar"><i style="width:${Math.round(c / max * 100)}%"></i></div></div>`;
+  }).join("");
+}
+</script>
+</body>
+</html>

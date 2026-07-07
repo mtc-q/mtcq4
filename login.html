@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log in — mtcq</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%23ff5c1a%22/><text x=%2216%22 y=%2223%22 font-size=%2218%22 font-family=%22monospace%22 fill=%22white%22 text-anchor=%22middle%22>m</text></svg>">
+<link rel="stylesheet" href="style.css">
+<style>
+  body { background: linear-gradient(180deg, var(--paper) 0%, var(--orange-soft) 130%); }
+  .stage { min-height: calc(100vh - 65px); display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+  .card { width: min(420px, 100%); animation: popIn .35s cubic-bezier(.2,.7,.2,1) both; }
+  .card .hello { text-align: center; margin-bottom: 22px; }
+  .card .hello h1 { font-family: var(--font-display); font-size: 30px; }
+  .card .hello h1 b { color: var(--orange); }
+  .card .hello p { color: var(--ash); font-size: 13.5px; margin-top: 6px; }
+
+  .auth-tabs { display: flex; background: var(--cream); border: 1px solid var(--line); border-radius: 999px; padding: 4px; margin-bottom: 20px; }
+  .auth-tabs button {
+    flex: 1; border: 0; background: none; cursor: pointer;
+    font-family: var(--font-body); font-weight: 600; font-size: 13.5px;
+    padding: 10px; border-radius: 999px; color: var(--ash);
+    transition: background .18s, color .18s, box-shadow .18s;
+  }
+  .auth-tabs button.on { background: var(--orange); color: #fff; box-shadow: var(--shadow); }
+
+  .forgot { background: none; border: 0; color: var(--ash); font-family: var(--font-mono); font-size: 11.5px; cursor: pointer; text-decoration: underline; padding: 0; }
+  .forgot:hover { color: var(--orange-deep); }
+  .back { display: block; text-align: center; margin-top: 18px; font-size: 13px; color: var(--ash); }
+</style>
+</head>
+<body>
+
+<div class="overlay" id="maintenance-overlay">
+  <div><h1>mtcq is <b>paused</b></h1><p>The platform is temporarily shut down for maintenance. Check back soon.</p></div>
+</div>
+
+<header class="topbar">
+  <a class="wordmark" href="index.html">mtcq<span>.</span></a>
+  <div class="topbar-actions"><a class="btn ghost small" href="index.html">← Back to home</a></div>
+</header>
+
+<div class="stage">
+  <div class="card">
+    <div class="hello">
+      <h1>Welcome to <b>mtcq</b></h1>
+      <p>One page for every link you promote. Free, always.</p>
+    </div>
+
+    <div class="panel">
+      <div class="auth-tabs" role="tablist">
+        <button id="tab-login" class="on" role="tab">Log in</button>
+        <button id="tab-signup" role="tab">Create account</button>
+      </div>
+
+      <form id="auth-form" autocomplete="on">
+        <label class="field"><span class="lbl">Email</span>
+          <input type="email" id="email" required autocomplete="email" placeholder="you@example.com">
+        </label>
+        <label class="field"><span class="lbl">Password</span>
+          <input type="password" id="password" required minlength="6" autocomplete="current-password" placeholder="At least 6 characters">
+        </label>
+        <div class="msg" id="auth-msg" role="status"></div>
+        <button class="btn" type="submit" id="auth-submit" style="width:100%">Log in</button>
+        <p style="margin-top:14px; text-align:center">
+          <button type="button" class="forgot" id="forgot">Forgot password?</button>
+        </p>
+      </form>
+    </div>
+
+    <span class="back">New here? Creating an account takes about a minute.</span>
+  </div>
+</div>
+
+<script type="module">
+import {
+  auth, onAuthStateChanged, createUserWithEmailAndPassword,
+  signInWithEmailAndPassword, sendPasswordResetEmail,
+  getPlatformConfig, enforceMaintenance, authError, say
+} from "./app.js";
+
+const tabLogin  = document.getElementById("tab-login");
+const tabSignup = document.getElementById("tab-signup");
+const form      = document.getElementById("auth-form");
+const emailEl   = document.getElementById("email");
+const passEl    = document.getElementById("password");
+const submit    = document.getElementById("auth-submit");
+const msg       = document.getElementById("auth-msg");
+let mode = "login";
+
+function setMode(m) {
+  mode = m;
+  tabLogin.classList.toggle("on", m === "login");
+  tabSignup.classList.toggle("on", m === "signup");
+  submit.textContent = m === "login" ? "Log in" : "Create my free account";
+  passEl.autocomplete = m === "login" ? "current-password" : "new-password";
+}
+tabLogin.onclick  = () => setMode("login");
+tabSignup.onclick = () => setMode("signup");
+if (location.hash === "#signup") setMode("signup");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  submit.disabled = true;
+  try {
+    if (mode === "signup") {
+      await createUserWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
+    } else {
+      await signInWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
+    }
+    window.location.href = "dashboard.html";
+  } catch (err) {
+    say(msg, authError(err), false);
+  } finally {
+    submit.disabled = false;
+  }
+});
+
+document.getElementById("forgot").onclick = async () => {
+  const email = emailEl.value.trim();
+  if (!email) return say(msg, "Type your email above first, then press Forgot password.", false);
+  try {
+    await sendPasswordResetEmail(auth, email);
+    say(msg, "Reset email sent — check your inbox.");
+  } catch (err) { say(msg, authError(err), false); }
+};
+
+// already logged in? straight to the dashboard. Also honor the kill-switch.
+const config = await getPlatformConfig();
+onAuthStateChanged(auth, (user) => {
+  if (enforceMaintenance(config, user)) return;
+  if (user) window.location.href = "dashboard.html";
+});
+</script>
+</body>
+</html>
